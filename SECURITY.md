@@ -1,5 +1,5 @@
 # Security policy
- 
+  
 ## Supported versions
 
 Only lastest two minor version releases are supported (>= 0.12) for accepting vulnerability reports and patching fixes.
