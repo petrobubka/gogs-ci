@@ -5,26 +5,23 @@ pipeline {
         stage('Build') {
             when {
                 // Build only pushes to the main branches
-                branch 'main', 'master'
-                changeset {
-                    not {
-                        changeRequest()
-                    }
-                }
+                expression { env.BRANCH_NAME ==~ /^(main|master)$/ && env.CHANGE_ID == null }
             }
             steps {
-                // Clean up any previous build artifacts
-                sh 'rm -f gogs'
-
-                // Build the project using go build
-                sh 'go build -o gogs'
-
-                // Verify if the build was successful
                 script {
-                    if (fileExists('gogs')) {
-                        echo 'Build successful'
-                    } else {
-                        error 'Build failed'
+                    // Clean up any previous build artifacts
+                    sh 'rm -f gogs'
+
+                    // Build the project using go build
+                    sh 'go build -o gogs'
+
+                    // Verify if the build was successful
+                    script {
+                        if (fileExists('gogs')) {
+                            echo 'Build successful'
+                        } else {
+                            error 'Build failed'
+                        }
                     }
                 }
             }
@@ -33,23 +30,78 @@ pipeline {
         stage('Pull Request') {
             when {
                 // Build pull requests from all branches
-                changeset {
-                    changeRequest()
-                }
+                expression { env.CHANGE_ID != null }
             }
             steps {
-                // Clean up any previous build artifacts
-                sh 'rm -f gogs'
-
-                // Build the project using go build
-                sh 'go build -o gogs'
-
-                // Verify if the build was successful
                 script {
-                    if (fileExists('gogs')) {
-                        echo 'Build successful'
-                    } else {
-                        error 'Build failed'
+                    // Clean up any previous build artifacts
+                    sh 'rm -f gogs'
+
+                    // Build the project using go build
+                    sh 'go build -o gogs'
+
+                    // Verify if the build was successful
+                    script {
+                        if (fileExists('gogs')) {
+                            echo 'Build successful'
+                        } else {
+                            error 'Build failed'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            when {
+                // Build only pushes to the main branches
+                expression { env.BRANCH_NAME ==~ /^(main|master)$/ && env.CHANGE_ID == null }
+            }
+            steps {
+                script {
+                    // Clean up any previous build artifacts
+                    sh 'rm -f gogs'
+
+                    // Build the project using go build
+                    sh 'go build -o gogs'
+
+                    // Verify if the build was successful
+                    script {
+                        if (fileExists('gogs')) {
+                            echo 'Build successful'
+                        } else {
+                            error 'Build failed'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Pull Request') {
+            when {
+                // Build pull requests from all branches
+                expression { env.CHANGE_ID != null }
+            }
+            steps {
+                script {
+                    // Clean up any previous build artifacts
+                    sh 'rm -f gogs'
+
+                    // Build the project using go build
+                    sh 'go build -o gogs'
+
+                    // Verify if the build was successful
+                    script {
+                        if (fileExists('gogs')) {
+                            echo 'Build successful'
+                        } else {
+                            error 'Build failed'
+                        }
                     }
                 }
             }
