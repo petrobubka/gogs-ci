@@ -14,7 +14,7 @@ pipeline {
                sh '''
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
                     apk update
-                    apk add add --no-cache go
+                    apk add add --no-cache binutils go 
                 '''
 
                 // Clean up any previous build artifacts
