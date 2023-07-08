@@ -11,10 +11,12 @@ pipeline {
             }
             steps {
                 // Install Go inside the container
-                sh echo "https://alpine.global.ssl.fastly.net/alpine/v3.18/main
-                https://alpine.global.ssl.fastly.net/alpine/v3.18/community">/etc/apk/repositories
-                sh apk update
-                sh apk add --no-cache nodejs git make go npm
+                sh '''
+                    echo "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
+                    echo "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" >> /etc/apk/repositories
+                    apk update
+                    apk add --no-cache nodejs git make go npm
+                '''
 
                 // Clean up any previous build artifacts
                 sh 'rm -f gogs'
