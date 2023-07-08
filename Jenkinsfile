@@ -11,7 +11,6 @@ pipeline {
             }
             steps {
                 // Install Go inside the container
-                sh 'apk add --no-cache go'
                 sh echo "https://alpine.global.ssl.fastly.net/alpine/v3.18/main
                 https://alpine.global.ssl.fastly.net/alpine/v3.18/community">/etc/apk/repositories
                 sh apk update
