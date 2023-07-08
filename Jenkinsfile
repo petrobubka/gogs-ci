@@ -11,8 +11,9 @@ pipeline {
             }
             steps {
                 // Install Go inside the container
-                sh '''
-                    echo -e "http://nl.alpinelinux.org/alpine/v3.18/main\nhttp://nl.alpinelinux.org/alpine/v3.18/community" > /etc/apk/repositories
+               sh '''
+                    echo "https://alpine.global.ssl.fastly.net/alpine/v3.18/main
+                    https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
                     apk update
                     apk add --no-cache nodejs git make go npm
                 '''
