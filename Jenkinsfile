@@ -10,20 +10,21 @@ pipeline {
                 expression { env.BRANCH_NAME ==~ /^(main|master)$/ && env.CHANGE_ID == null }
             }
             steps {
+                // Install Go inside the container
+                sh 'apk add --no-cache go'
+
+                // Clean up any previous build artifacts
+                sh 'rm -f gogs'
+
+                // Build the project using go build
+                sh 'go build -o gogs'
+
+                // Verify if the build was successful
                 script {
-                    // Clean up any previous build artifacts
-                    sh 'rm -f gogs'
-
-                    // Build the project using go build
-                    sh 'go build -o gogs'
-
-                    // Verify if the build was successful
-                    script {
-                        if (fileExists('gogs')) {
-                            echo 'Build successful'
-                        } else {
-                            error 'Build failed'
-                        }
+                    if (fileExists('gogs')) {
+                        echo 'Build successful'
+                    } else {
+                        error 'Build failed'
                     }
                 }
             }
@@ -35,20 +36,21 @@ pipeline {
                 expression { env.CHANGE_ID != null }
             }
             steps {
+                // Install Go inside the container
+                sh 'apk add --no-cache go'
+
+                // Clean up any previous build artifacts
+                sh 'rm -f gogs'
+
+                // Build the project using go build
+                sh 'go build -o gogs'
+
+                // Verify if the build was successful
                 script {
-                    // Clean up any previous build artifacts
-                    sh 'rm -f gogs'
-
-                    // Build the project using go build
-                    sh 'go build -o gogs'
-
-                    // Verify if the build was successful
-                    script {
-                        if (fileExists('gogs')) {
-                            echo 'Build successful'
-                        } else {
-                            error 'Build failed'
-                        }
+                    if (fileExists('gogs')) {
+                        echo 'Build successful'
+                    } else {
+                        error 'Build failed'
                     }
                 }
             }
