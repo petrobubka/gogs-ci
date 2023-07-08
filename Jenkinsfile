@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        docker { image 'alpine' }
+        docker { image 'alpine:3.15' }
     }
 
     stages {
@@ -12,10 +12,9 @@ pipeline {
             steps {
                 // Install Go inside the container
                sh '''
-                    echo "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" > /etc/apk/repositories
-                    echo "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
+                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
                     apk update
-                    apk add add --no-cache git make musl-dev go
+                    apk add add --no-cache go
                 '''
 
                 // Clean up any previous build artifacts
