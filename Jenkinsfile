@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        docker { image 'alpine:3.18' }
+        docker { image 'alpine' }
     }
 
     stages {
@@ -15,7 +15,7 @@ pipeline {
                     echo "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" > /etc/apk/repositories
                     echo "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
                     apk update
-                    apk add --no-cache nodejs git make go npm
+                   add --no-cache git make musl-dev go
                 '''
 
                 // Clean up any previous build artifacts
