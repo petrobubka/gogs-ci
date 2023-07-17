@@ -1,5 +1,5 @@
 version: '3'
-
+ 
 vars:
   BINARY_EXT:
     sh: echo '{{if eq OS "windows"}}.exe{{end}}'
