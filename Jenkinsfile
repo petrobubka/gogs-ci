@@ -1,35 +1,46 @@
 pipeline {
     agent {
-        label 'kubeagent'
+        kubernetes {
+            // Use the Kubernetes agent label that matches your configured Jenkins Kubernetes plugin
+            label 'my-k8s-agent'
+            defaultContainer 'jnlp'
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+                  - name: golang
+                    image: golang:1.17 // Use the appropriate Go version
+                    command:
+                      - sleep
+                      - infinity
+            """
+        }
     }
-
+    
     stages {
         stage('Build') {
             when {
-                // Build only pushes to the main branches
                 expression { env.BRANCH_NAME ==~ /^(main|master)$/ && env.CHANGE_ID == null }
             }
             steps {
-                // Install Go inside the container
-               sh '''
-                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
-                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
-                    apk update
-                    apk add --no-cache binutils go 
-                '''
-
-                // Clean up any previous build artifacts
-                sh 'rm -f gogs'
-
-                // Build the project using go build
-                sh 'go build -o gogs'
-
-                // Verify if the build was successful
-                script {
-                    if (fileExists('gogs')) {
-                        echo 'Build successful'
-                    } else {
-                        error 'Build failed'
+                container('golang') {
+                    // Install Go inside the container
+                    sh 'apk update && apk add --no-cache binutils go'
+                    
+                    // Clean up any previous build artifacts
+                    sh 'rm -f gogs'
+                    
+                    // Build the project using go build
+                    sh 'go build -o gogs'
+                    
+                    // Verify if the build was successful
+                    script {
+                        if (fileExists('gogs')) {
+                            echo 'Build successful'
+                        } else {
+                            error 'Build failed'
+                        }
                     }
                 }
             }
@@ -37,25 +48,26 @@ pipeline {
 
         stage('Pull Request') {
             when {
-                // Build pull requests from all branches
                 expression { env.CHANGE_ID != null }
             }
             steps {
-                // Install Go inside the container
-                sh 'apk add --no-cache go'
+                container('golang') {
+                    // Install Go inside the container
+                    sh 'apk add --no-cache go'
 
-                // Clean up any previous build artifacts
-                sh 'rm -f gogs'
+                    // Clean up any previous build artifacts
+                    sh 'rm -f gogs'
 
-                // Build the project using go build
-                sh 'go build -o gogs'
+                    // Build the project using go build
+                    sh 'go build -o gogs'
 
-                // Verify if the build was successful
-                script {
-                    if (fileExists('gogs')) {
-                        echo 'Build successful'
-                    } else {
-                        error 'Build failed'
+                    // Verify if the build was successful
+                    script {
+                        if (fileExists('gogs')) {
+                            echo 'Build successful'
+                        } else {
+                            error 'Build failed'
+                        }
                     }
                 }
             }
