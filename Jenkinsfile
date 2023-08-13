@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        docker { image 'alpine:3.15' }
+        label 'kubeagent'
     }
 
     stages {
