@@ -26,10 +26,6 @@ pipeline {
             steps {
                 container('golang') {
                     // Install Go inside the container
-                    sh 'apk update && apk add --no-cache binutils go'
-                    
-                    // Clean up any previous build artifacts
-                    sh 'rm -f gogs'
                     
                     // Build the project using go build
                     sh 'go build -o gogs'
@@ -52,11 +48,6 @@ pipeline {
             }
             steps {
                 container('golang') {
-                    // Install Go inside the container
-                    sh 'apk add --no-cache go'
-
-                    // Clean up any previous build artifacts
-                    sh 'rm -f gogs'
 
                     // Build the project using go build
                     sh 'go build -o gogs'
