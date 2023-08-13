@@ -2,7 +2,7 @@ pipeline {
     agent {
         kubernetes {
             // Use the Kubernetes agent label that matches your configured Jenkins Kubernetes plugin
-            label 'my-k8s-agent'
+            label 'kubeagent'
             defaultContainer 'jnlp'
             yaml """
                 apiVersion: v1
