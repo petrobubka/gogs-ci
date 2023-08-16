@@ -13,7 +13,7 @@ pipeline {
                     command:
                     - sleep
                     args:
-                    - 99d                    
+                    - 99d
             """
         }
     }
@@ -47,12 +47,12 @@ pipeline {
             }
         }
 
+        stage('Another Stage') {
             when {
                 expression { env.CHANGE_ID != null }
             }
             steps {
                 container('alpine') {
-                    
                     sh '''
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
