@@ -49,7 +49,8 @@ pipeline {
             }
             steps {
                 container('golang') {
-
+                    sh 'ls'
+                    checkout scm
                     // Build the project using go build
                     sh 'go build -o gogs'
 
