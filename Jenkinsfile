@@ -1,62 +1,48 @@
 pipeline {
     agent {
-        docker { image 'alpine:3.15' }
+        kubernetes {
+            label 'kubeagent'
+            yaml """
+                apiVersion: v1
+                kind: Pod
+                spec:
+                  containers:
+                  - name: alpine
+                    image: alpine:3.15
+                    command:
+                    - sleep
+                    args:
+                    - 99d
+            """
+        }
     }
-
+    
     stages {
-        stage('Build') {
-            when {
-                // Build only pushes to the main branches
-                expression { env.BRANCH_NAME ==~ /^(main|master)$/ && env.CHANGE_ID == null }
-            }
+        stage('Install dependencies') {
             steps {
-                // Install Go inside the container
-               sh '''
+                container('alpine') {
+                    sh '''
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
                     apk update
-                    apk add --no-cache binutils go 
-                '''
-
-                // Clean up any previous build artifacts
-                sh 'rm -f gogs'
-
-                // Build the project using go build
-                sh 'go build -o gogs'
-
-                // Verify if the build was successful
-                script {
-                    if (fileExists('gogs')) {
-                        echo 'Build successful'
-                    } else {
-                        error 'Build failed'
-                    }
+                    apk add --no-cache binutils go postgresql-client git openssh
+                    '''
                 }
             }
         }
-
-        stage('Pull Request') {
-            when {
-                // Build pull requests from all branches
-                expression { env.CHANGE_ID != null }
-            }
+        
+        stage('Build Gogs') {
             steps {
-                // Install Go inside the container
-                sh 'apk add --no-cache go'
-
-                // Clean up any previous build artifacts
-                sh 'rm -f gogs'
-
-                // Build the project using go build
-                sh 'go build -o gogs'
-
-                // Verify if the build was successful
-                script {
-                    if (fileExists('gogs')) {
-                        echo 'Build successful'
-                    } else {
-                        error 'Build failed'
-                    }
+                container('alpine') {
+                    sh 'go build -o gogs -buildvcs=false'
+                }
+            }
+        }
+        
+        stage('Test Gogs') {
+            steps {
+                container('alpine') {
+                    sh 'go test -v -cover ./...'
                 }
             }
         }
