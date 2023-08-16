@@ -10,10 +10,7 @@ pipeline {
                 spec:
                   containers:
                   - name: golang
-                    image: alpine:3.15 // Use the appropriate Go version
-                    command:
-                      - sleep
-                      - infinity
+                    image: alpine:3.15
             """
         }
     }
