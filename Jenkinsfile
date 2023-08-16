@@ -31,7 +31,7 @@ pipeline {
                     apk update
                     apk add --no-cache binutils go postgresql-client git openssh
                     '''
-                    
+                    sh 'git config --global --add safe.directory .'
                     sh 'go build -o gogs'
                     
                     sh 'go test -v -cover ./...'
@@ -47,19 +47,19 @@ pipeline {
             }
         }
 
-        stage('Pull Request') {
             when {
                 expression { env.CHANGE_ID != null }
             }
             steps {
                 container('alpine') {
+                    
                     sh '''
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
                     apk update
                     apk add --no-cache binutils go postgresql-client git openssh
                     '''
-                    
+                    sh 'git config --global --add safe.directory .'
                     sh 'go build -o gogs'
                     sh 'go test -v -cover ./...'
 
