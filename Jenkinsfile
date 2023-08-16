@@ -16,11 +16,29 @@ pipeline {
             """
         }
     }
-        stage('Deploy App') {
+      environment {
+    DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+    }
+   stages {
+    stage('Build') {
       steps {
-        script {
-          kubernetesDeploy(configs: "myweb.yaml", kubeconfigId: "mykubeconfig")
-        }
+        sh 'docker build -t petrobubka/my_gogs_image -f Dockerfile_app .'
       }
     }
+    stage('Login') {
+      steps {
+        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+      }
     }
+    stage('Push') {
+      steps {
+        sh 'docker push lloydmatereke/my_gogs_image'
+      }
+    }
+  }
+  post {
+    always {
+      sh 'docker logout'
+    }
+  }
+}
