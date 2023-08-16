@@ -25,7 +25,6 @@ pipeline {
             }
             steps {
                 container('alpine') {
-                    sh 'mkdir -p /etc/apk'
                     sh '''
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
@@ -54,9 +53,6 @@ pipeline {
             }
             steps {
                 container('alpine') {
-                    sh "echo hello from $POD_CONTAINER"
-                    sh 'mkdir -p /etc/apk'
-                    
                     sh '''
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
