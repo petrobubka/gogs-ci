@@ -60,7 +60,7 @@ pipeline {
                     apk add --no-cache binutils go postgresql-client git openssh
                     '''
                     sh 'git config --global --add safe.directory .'
-                    sh 'go build -o gogs'
+                    sh 'go build -o gogs -buildvcs=false'
                     sh 'go test -v -cover ./...'
 
                     script {
