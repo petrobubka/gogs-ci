@@ -10,6 +10,10 @@ pipeline {
                   containers:
                   - name: alpine
                     image: alpine:3.15
+                    command:
+                    - sleep
+                    args:
+                    - 99d                    
             """
         }
     }
