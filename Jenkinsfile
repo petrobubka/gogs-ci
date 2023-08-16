@@ -3,13 +3,12 @@ pipeline {
         kubernetes {
             // Use the Kubernetes agent label that matches your configured Jenkins Kubernetes plugin
             label 'kubeagent'
-            defaultContainer 'jnlp'
             yaml """
                 apiVersion: v1
                 kind: Pod
                 spec:
                   containers:
-                  - name: golang
+                  - name: alpine
                     image: alpine:3.15
             """
         }
@@ -21,7 +20,7 @@ pipeline {
                 expression { env.BRANCH_NAME ==~ /^(main|master)$/ && env.CHANGE_ID == null }
             }
             steps {
-                container('golang') {
+                container('alpine') {
                     sh 'mkdir -p /etc/apk'
                     sh '''
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
@@ -50,8 +49,10 @@ pipeline {
                 expression { env.CHANGE_ID != null }
             }
             steps {
-                container('golang') {
+                container('alpine') {
+                    sh "echo hello from $POD_CONTAINER"
                     sh 'mkdir -p /etc/apk'
+                    
                     sh '''
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
