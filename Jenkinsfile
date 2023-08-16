@@ -10,7 +10,7 @@ pipeline {
                 spec:
                   containers:
                   - name: golang
-                    image: golang:1.17 // Use the appropriate Go version
+                    image: alpine:3.15 // Use the appropriate Go version
                     command:
                       - sleep
                       - infinity
@@ -25,13 +25,17 @@ pipeline {
             }
             steps {
                 container('golang') {
-                    // Install Go inside the container
-                    sh 'ls'
-                    checkout scm
-                    // Build the project using go build
+                    sh '''
+                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
+                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
+                    apk update
+                    apk add --no-cache binutils go postgresql-client git openssh
+                    '''
+                    
                     sh 'go build -o gogs'
                     
-                    // Verify if the build was successful
+                    sh 'go test -v -cover ./...'
+
                     script {
                         if (fileExists('gogs')) {
                             echo 'Build successful'
@@ -49,12 +53,16 @@ pipeline {
             }
             steps {
                 container('golang') {
-                    sh 'ls'
-                    checkout scm
-                    // Build the project using go build
+                    sh '''
+                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
+                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
+                    apk update
+                    apk add --no-cache binutils go postgresql-client git openssh
+                    '''
+                    
                     sh 'go build -o gogs'
+                    sh 'go test -v -cover ./...'
 
-                    // Verify if the build was successful
                     script {
                         if (fileExists('gogs')) {
                             echo 'Build successful'
