@@ -19,26 +19,28 @@ pipeline {
       environment {
     DOCKERHUB_CREDENTIALS = credentials('dockerhub')
     }
-   stages {
-    stage('Build') {
-      steps {
-        sh 'docker build -t petrobubka/my_gogs_image -f Dockerfile_app .'
-      }
+    stages {
+        stage('Install dependencies') {
+            steps {
+                container('alpine') {
+                    sh '''
+                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
+                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
+                    apk update
+                    apk add --no-cache binutils go postgresql-client git openssh docker
+                    '''
+                }
+            }
+        }
+        stage('Build') {
+          steps {
+            container('alpine'){
+                sh 'docker build -t petrobubka/my_gogs_image -f Dockerfile_app .'
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                sh 'docker push lloydmatereke/my_gogs_image'
+                sh 'docker logout'
+                }
+            }
+        }
     }
-    stage('Login') {
-      steps {
-        sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-      }
-    }
-    stage('Push') {
-      steps {
-        sh 'docker push lloydmatereke/my_gogs_image'
-      }
-    }
-  }
-  post {
-    always {
-      sh 'docker logout'
-    }
-  }
 }
