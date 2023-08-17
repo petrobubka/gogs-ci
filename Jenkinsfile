@@ -13,6 +13,10 @@ pipeline {
                     - sleep
                     args:
                     - 99d
+                  volumes:
+                  - name: docker-socket
+                    hostPath:
+                      path: /var/run/docker.sock                    
             """
         }
     }
