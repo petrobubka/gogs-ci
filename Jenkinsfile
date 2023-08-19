@@ -74,7 +74,7 @@ pipeline {
                     sh '''
                     /kaniko/executor --dockerfile `pwd`/Dockerfile_app \
                                      --context `pwd` \
-                                     --destination=petrobubka/my_gogs_image:${BUILD_NUMBER}
+                                     --destination=petrobubka/my_gogs_image:latest
                     '''
                   }
                 }
