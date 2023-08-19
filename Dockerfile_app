@@ -9,7 +9,7 @@ RUN apk add --no-cache binutils go postgresql-client git openssh
 
 RUN mkdir /gogs
 WORKDIR /gogs
-COPY ./gogs/ /gogs
+COPY . /gogs
 
 EXPOSE 3000
 EXPOSE 22
