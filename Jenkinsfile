@@ -13,17 +13,43 @@ pipeline {
                     - sleep
                     args:
                     - 99d
+                  - name: kubectl
+                    image: joshendriks/alpine-k8s
+                    command:
+                    - /bin/cat
+                    tty: true    
+                  - name: kaniko
+                    image: gcr.io/kaniko-project/executor:debug
+                    command:
+                    - /busybox/cat
+                    tty: true
+                    volumeMounts:
+                      - name: kaniko-secret
+                        mountPath: /kaniko/.docker
                   volumes:
-                  - name: docker-socket
-                    hostPath:
-                      path: /var/run/docker.sock                    
+                    - name: kaniko-secret
+                      secret:
+                        secretName: regcred
+                        items:
+                          - key: .dockerconfigjson
+                            path: config.json
             """
         }
     }
-      environment {
-    DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-    }
     stages {
+        stage('Kaniko Build & Push Image') {
+              steps {
+                container('kaniko') {
+                  script {
+                    sh '''
+                    /kaniko/executor --dockerfile `pwd`/Dockerfile_app \
+                                     --context `pwd` \
+                                     --destination=petrobubka/my_gogs_image:${BUILD_NUMBER}
+                    '''
+                  }
+                }
+              }
+            }
         stage('Install dependencies') {
             steps {
                 container('alpine') {
@@ -32,19 +58,7 @@ pipeline {
                     echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
                     apk update
                     apk add --no-cache binutils go postgresql-client git openssh
-                    dockerd &
-                    sleep 10  # Allow Docker daemon to start
                     '''
-                }
-            }
-        }
-        stage('Build') {
-          steps {
-            container('alpine'){
-                sh 'docker build -t petrobubka/my_gogs_image -f Dockerfile_app .'
-                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                sh 'docker push lloydmatereke/my_gogs_image'
-                sh 'docker logout'
                 }
             }
         }
