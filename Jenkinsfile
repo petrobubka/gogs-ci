@@ -37,6 +37,36 @@ pipeline {
         }
     }
     stages {
+
+                stage('Install dependencies') {
+            steps {
+                container('alpine') {
+                    sh '''
+                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
+                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
+                    apk update
+                    apk add --no-cache binutils go postgresql-client git openssh
+                    '''
+                }
+            }
+        }
+        
+        stage('Build Gogs') {
+            steps {
+                container('alpine') {
+                    sh 'go build -o gogs -buildvcs=false'
+                }
+            }
+        }
+        
+        stage('Test Gogs') {
+            steps {
+                container('alpine') {
+                    sh 'go test -v -cover ./...'
+                }
+            }
+        }
+        
         stage('Kaniko Build & Push Image') {
               steps {
                 container('kaniko') {
@@ -50,17 +80,6 @@ pipeline {
                 }
               }
             }
-        stage('Install dependencies') {
-            steps {
-                container('alpine') {
-                    sh '''
-                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/community" > /etc/apk/repositories
-                    echo -e "https://alpine.global.ssl.fastly.net/alpine/v3.18/main" >> /etc/apk/repositories
-                    apk update
-                    apk add --no-cache binutils go postgresql-client git openssh
-                    '''
-                }
-            }
-        }
+
     }
 }
