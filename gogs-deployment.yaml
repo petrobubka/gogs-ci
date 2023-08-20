@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gogs
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: gogs
+  template:
+    metadata:
+      labels:
+        app: gogs
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: node1
+      containers:
+        - name: gogs
+          image: petrobubka/my_gogs_image:latest
+          ports:
+            - containerPort: 3000
+            - containerPort: 22
+          resources:
+            requests:
+              cpu: "100m"
+          volumeMounts:
+            - mountPath: /mnt
+              name: gogs-data
+      volumes:
+        - name: gogs-data
+          persistentVolumeClaim:
+            claimName: gogs-persistent-volume-claim
+
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gogs-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gogs
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
