@@ -74,12 +74,21 @@ pipeline {
                     sh '''
                     /kaniko/executor --dockerfile `pwd`/Dockerfile_app \
                                      --context `pwd` \
-                                     --destination=petrobubka/my_gogs_image:latest
+                                     --destination=petrobubka/my_gogs_image:${BUILD_NUMBER}
                     '''
                   }
                 }
               }
             }
-
+        stage('Deploy App to Kubernetes') {     
+              steps {
+                container('kubectl') {
+                  withCredentials([file(credentialsId: 'mykubeconfig', variable: 'KUBECONFIG')]) {
+                    sh 'sed -i "s/<TAG>/${BUILD_NUMBER}/" gogs-deployment.yaml'
+                    sh 'kubectl apply -f myweb.yaml'
+                  }
+                }
+              }
+            }
     }
 }
