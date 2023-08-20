@@ -85,7 +85,7 @@ pipeline {
                 container('kubectl') {
                   withCredentials([file(credentialsId: 'mykubeconfig', variable: 'KUBECONFIG')]) {
                     sh 'sed -i "s/<TAG>/${BUILD_NUMBER}/" gogs-deployment.yaml'
-                    sh 'kubectl apply -f myweb.yaml'
+                    sh 'kubectl apply -f gogs-deployment.yaml'
                   }
                 }
               }
