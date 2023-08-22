@@ -1,7 +1,7 @@
 pipeline {
     agent {
         kubernetes {
-            label 'kubeagent'
+
             yaml """
                 apiVersion: v1
                 kind: Pod
@@ -13,12 +13,32 @@ pipeline {
                     - sleep
                     args:
                     - 99d
+                  - name: kubectl
+                    image: joshendriks/alpine-k8s
+                    command:
+                    - /bin/cat
+                    tty: true    
+                  - name: kaniko
+                    image: gcr.io/kaniko-project/executor:debug
+                    command:
+                    - /busybox/cat
+                    tty: true
+                    volumeMounts:
+                      - name: kaniko-secret
+                        mountPath: /kaniko/.docker
+                  volumes:
+                    - name: kaniko-secret
+                      secret:
+                        secretName: regcred
+                        items:
+                          - key: .dockerconfigjson
+                            path: config.json
             """
         }
     }
-    
     stages {
-        stage('Install dependencies') {
+
+                stage('Install dependencies') {
             steps {
                 container('alpine') {
                     sh '''
@@ -46,5 +66,30 @@ pipeline {
                 }
             }
         }
+        
+        stage('Kaniko Build & Push Image') {
+              steps {
+                container('kaniko') {
+                  script {
+                    sh '''
+                    /kaniko/executor --dockerfile `pwd`/Dockerfile_app \
+                                     --context `pwd` \
+                                     --destination=petrobubka/my_gogs_image:${BUILD_NUMBER}
+                    '''
+                  }
+                }
+              }
+            }
+        stage('Deploy App to Kubernetes') {     
+              steps {
+                container('kubectl') {
+                  withCredentials([file(credentialsId: 'mykubeconfig', variable: 'KUBECONFIG')]) {
+                    sh 'kubectl delete deployment gogs'
+                    sh 'sed -i "s/<TAG>/${BUILD_NUMBER}/" gogs-deployment.yaml'
+                    sh 'kubectl apply -f gogs-deployment.yaml -n default'
+                  }
+                }
+              }
+            }
     }
 }
