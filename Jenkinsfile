@@ -84,6 +84,7 @@ pipeline {
               steps {
                 container('kubectl') {
                   withCredentials([file(credentialsId: 'mykubeconfig', variable: 'KUBECONFIG')]) {
+                    sh 'kubectl delete deployment gogs'
                     sh 'sed -i "s/<TAG>/${BUILD_NUMBER}/" gogs-deployment.yaml'
                     sh 'kubectl apply -f gogs-deployment.yaml -n default'
                   }
