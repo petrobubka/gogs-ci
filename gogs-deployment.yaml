@@ -16,7 +16,7 @@ spec:
         kubernetes.io/hostname: node1
       containers:
         - name: gogs
-          image: petrobubka/my_gogs_image:latest
+          image: petrobubka/my_gogs_image:<TAG>
           ports:
             - containerPort: 3000
             - containerPort: 22
